@@ -8,71 +8,102 @@ app.use(express.json());
 connectDB();
 
 app.get("/", (req, res) => {
-  return res
-    .status(200)
-    .send("<b>Welcome to MY Resful API using sequelize</b>");
+  return res.json(products);
 });
 
-//get all product
-app.get("/api/products", (req, res) => {
-  return res.status(200).json(products);
-});
-
-//get product by id
-app.get("/api/products/:id", (req, res) => {
-  const productId = Number(req.params.id);
-  const product = products.find((p) => p.id === productId);
-  if (!product) {
-    return res.status(404).json({ message: "Product not found" });
+// สร้าง Product
+app.post("/api/products", async (req, res) => {
+  try {
+    const { name, price } = req.body;
+    if (!name || !price) {
+      return res
+        .status(400)
+        .json({ message: "Name & Price are required fields!!" });
+    }
+    const newProduct = await Product.create({
+      name: name,
+      price: Number(price),
+    });
+    return res.status(201).json(newProduct);
+  } catch (error) {
+    console.error("Server error!", error);
+    return res.status(500).json({ error: error.message });
   }
-  return res.status(200).json(product);
 });
 
-//create new product
-app.post("/api/products", (req, res) => {
-  const { name, price } = req.body;
-  if (!name || !price) {
-    return res.status(400).json({ massage: "Name and price are required!" });
+// ดูทั้งหมด
+app.get("/api/products", async (req, res) => {
+  try {
+    const products = await Product.findAll();
+    return res.json(products);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
   }
-  const newProduct = {
-    id: products.length > 0 ? Math.max(...products.map((p) => p.id)) + 1 : 1,
-    name: name,
-    price: Number(price),
-  };
-  products.push(newProduct);
-  return res.status(201).json(newProduct);
 });
 
-//update product by id
-app.put("/api/products/:id", (req, res) => {
-  const { name, price } = req.body;
-  const productId = Number(req.params.id);
-  const productsIndex = products.findIndex((p) => p.id === productId);
-  if (productsIndex === -1) {
-    return res.status(404).json({ message: "Product not found" });
+//find by Id
+
+app.get("/api/products/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ message: "Id needed!" });
+    }
+    const product = await Product.findByPk(id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not Found!" });
+    }
+    return res.status(200).json(product);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
   }
-  products[productsIndex] = {
-    id: productId,
-    name: name || products[productsIndex].name,
-    price: Number(price) || products[productsIndex].price,
-  };
-  return res.status(200).json(products[productsIndex]);
 });
 
-//delete product by id
-app.delete("/api/products/:id", (req, res) => {
-  const productId = Number(req.params.id);
-  const productsIndex = products.findIndex((p) => p.id === productId);
-  if (productsIndex === -1) {
-    return res.status(404).json({ message: "Product not found" });
+// อัพเดท Product
+app.put("/api/products/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ message: "Id needed!" });
+    }
+    const { name, price } = req.body;
+    if (!name && !price) {
+      return res
+        .status(400)
+        .json({ message: "Name & Price are required fields!!" });
+    }
+    const product = await Product.findByPk(id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not Found!" });
+    }
+    await product.update({
+      name: name || product.name,
+      price: Number(price) || product.price,
+    });
+    return res.status(200).json(product);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
   }
-  const deleteProduct = products.splice(productsIndex, 1);
-  return res.status(200).json({
-    message: "Product delete successfully",
-    deleteProduct: deleteProduct[0],
-  });
+});
+
+//delete Product
+app.delete("/api/products/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ message: "Id needed!" });
+    }
+    const product = await Product.findByPk(id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not Found!" });
+    }
+    await product.destroy();
+    return res.status(200).json({ message: "Product deleted successfully!" });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
 });
 
 app.listen(PORT, () => {
-  console.log(`Swever is running on: http://localhost:${PORT}`);
+  console.log( `Server is running on: http://localhost:${PORT} `);
 });
