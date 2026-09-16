@@ -1,11 +1,19 @@
 import { Sequelize, DataTypes } from "sequelize";
 
+const dbName = process.env.PGDATABASE;
+const dbUserName = process.env.PGUSER;
+const dbPassword = process.env.PGPASSWORD;
+const dbURL = process.env.PGHOST;
+
 // database connection - fixed the "Sequelize" typo
-const sequelize = new Sequelize("product_db", "dev_user", "dev_password", {
-  host: "localhost",
+const sequelize = new Sequelize(dbName, dbUserName, dbPassword, {
+  host: dbURL,
   port: 5435,
   dialect: "postgres",
   logging: false,
+  dialectOption: {
+    ssl: { require: true, rejectUnautherized: false },
+  },
 });
 
 // define database schema
