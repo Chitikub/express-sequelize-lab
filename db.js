@@ -1,22 +1,33 @@
 import { Sequelize, DataTypes } from "sequelize";
 import "dotenv/config";
 
-const dbName = process.env.PGDATABASE;
-const dbUserName = process.env.PGUSER;
-const dbPassword = process.env.PGPASSWORD;
-const dbURL = process.env.PGHOST_UNPOOLED;
+// const dbName = process.env.PGDATABASE;
+// const dbUserName = process.env.PGUSER;
+// const dbPassword = process.env.PGPASSWORD;
+// const dbURL = process.env.PGHOST_UNPOOLED;
 
 const databaseUrl = process.env.DATABASE_URL;
 const PORT = process.env.PORT;
 
 // database connection - fixed the "Sequelize" typo
-const sequelize = new Sequelize(dbName, dbUserName, dbPassword, {
-  host: dbURL,
-  port: PORT,
+// const sequelize = new Sequelize(dbName, dbUserName, dbPassword, {
+//   host: dbURL,
+//   port: PORT,
+//   dialect: "postgres",
+//   logging: false,
+//   dialectOptions: {
+//     ssl: { require: true, rejectUnauthorized: false },
+//   },
+// });
+
+const sequelize = new Sequelize(databaseUrl, {
   dialect: "postgres",
   logging: false,
   dialectOptions: {
-    ssl: { require: true, rejectUnauthorized: false },
+    ssl: {
+      require: true,
+      rejectUnauthorized: false,
+    },
   },
 });
 
