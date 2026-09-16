@@ -9,6 +9,12 @@ import "dotenv/config";
 const databaseUrl = process.env.DATABASE_URL;
 const PORT = process.env.PORT;
 
+if (!databaseUrl) {
+  console.error(
+    "❌ CRITICAL ERROR: DATABASE_URL is not defined in environment variables!",
+  );
+  process.exit(1);
+}
 // database connection - fixed the "Sequelize" typo
 // const sequelize = new Sequelize(dbName, dbUserName, dbPassword, {
 //   host: dbURL,
